@@ -65,6 +65,8 @@ public class TeleOp extends LinearOpMode {
         Servo CE = hardwareMap.get(Servo.class, "elbow");
         Servo claw = hardwareMap.get(Servo.class, "claw");
         Servo CS = hardwareMap.get(Servo.class, "shoulder");
+        Servo HSL = hardwareMap.get(Servo.class, "Horizontal Slide Left");
+        Servo HSR = hardwareMap.get(Servo.class, "Horizontal Slide Right");
 
         RevColorSensorV3 colorSensor = hardwareMap.get(RevColorSensorV3.class, "brushland color sensor");
 
@@ -74,6 +76,9 @@ public class TeleOp extends LinearOpMode {
         int score = 4;
         int low = 1;
         int pu = 2;
+
+        // There are for the HORIZONTAL SLIDES
+        int slideExtension = 0;
 
         // These are for the CLAW
         final double open = 1;
@@ -321,18 +326,35 @@ public class TeleOp extends LinearOpMode {
                     }
                     break;
                 case PSA_GET_READY_TO_PICK_UP:
-                    CS.setPosition(shoulderRetracted);
-                    CW.setPosition(wristDown);
-                    CE.setPosition(elbowExtended);
-                    if (timer.milliseconds() > 500)
+                    if (gamepad1.dpad_left)
+                    {
+                        frontLeftMotor.setPower(1);
+                        backRightMotor.setPower(1);
+                    }
+                    if (gamepad1.dpad_right)
+                    {
+                        frontRightMotor.setPower(1);
+                        backLeftMotor.setPower(1);
+                    }
+                    if (gamepad1.dpad_up)
+                    {
+                        HSR.setPosition(slideExtension+1);
+                        HSL.setPosition(slideExtension+1);
+                    }
+                    if (gamepad1.dpad_up)
+                    {
+                        HSR.setPosition(slideExtension-1);
+                        HSL.setPosition(slideExtension-1);
+                    }
+                    if (gamepad1.x)
                     {
                         robot = robotStates.PSA_CLAW_CLOSE;
                         timer.reset();
                     }
                     break;
-                // I don't know if there is a color sensor, and if there is idk how to work it. So just assume it lines up with a block
-                // and picked it up
                 case PSA_CLAW_CLOSE:
+                    CS.setPosition(elbowRetracted);
+                    sleep(500);
                     claw.setPosition(close);
                     if (timer.milliseconds() > 100)
                     {
