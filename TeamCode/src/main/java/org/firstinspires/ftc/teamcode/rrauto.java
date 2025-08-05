@@ -1,186 +1,319 @@
 package org.firstinspires.ftc.teamcode;
 
-import androidx.annotation.NonNull;
 
-import com.acmerobotics.dashboard.config.Config;
-import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Action;
+import com.acmerobotics.roadrunner.InstantAction;
 import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.SequentialAction;
-import com.acmerobotics.roadrunner.TrajectoryActionBuilder;
+import com.acmerobotics.roadrunner.SleepAction;
 import com.acmerobotics.roadrunner.Vector2d;
 import com.acmerobotics.roadrunner.ftc.Actions;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
-import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.hardware.rev.RevColorSensorV3;
+import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.hardware.NormalizedColorSensor;
+import com.qualcomm.robotcore.hardware.NormalizedRGBA;
+import com.qualcomm.robotcore.hardware.SwitchableLight;
 
-@Config
-@Autonomous(name = "BLUE_TEST_AUTO_PIXEL", group = "Autonomous")
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+
+@Autonomous
 public class rrauto extends LinearOpMode {
-    public class Lift {
-        private DcMotorEx lift;
 
-        public Lift(HardwareMap hardwareMap) {
-            lift = hardwareMap.get(DcMotorEx.class, "liftMotor");
-            lift.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-            lift.setDirection(DcMotorSimple.Direction.FORWARD);
-        }
+    private NormalizedColorSensor colorSensor;
 
-        public class LiftUp implements Action {
-            private boolean initialized = false;
+    int red = 0;
+    int blue = 0;
+    int green = 0;
+    int distance = 0;
+    int target_distance = 0;
 
-            @Override
-            public boolean run(@NonNull TelemetryPacket packet) {
-                if (!initialized) {
-                    lift.setPower(0.8);
-                    initialized = true;
-                }
+    Servo CS;
+    Servo CW;
+    Servo CE;
+    Servo claw;
+    Servo HSL;
+    Servo HSR;
 
-                double pos = lift.getCurrentPosition();
-                packet.put("liftPos", pos);
-                if (pos < 3000.0) {
-                    return true;
-                } else {
-                    lift.setPower(0);
-                    return false;
-                }
-            }
-        }
-        public Action liftUp() {
-            return new LiftUp();
-        }
+    DcMotor frontLeftMotor;
+    DcMotor frontRightMotor;
+    DcMotor backLeftMotor;
+    DcMotor backRightMotor;
+    DcMotor SL;
+    DcMotor SR;
 
-        public class LiftDown implements Action {
-            private boolean initialized = false;
 
-            @Override
-            public boolean run(@NonNull TelemetryPacket packet) {
-                if (!initialized) {
-                    lift.setPower(-0.8);
-                    initialized = true;
-                }
+    // These are for the VERTICAL slides
+    int score = 4;
+    int low = 1;
+    int pu = 2;
 
-                double pos = lift.getCurrentPosition();
-                packet.put("liftPos", pos);
-                if (pos > 100.0) {
-                    return true;
-                } else {
-                    lift.setPower(0);
-                    return false;
-                }
-            }
-        }
-        public Action liftDown(){
-            return new LiftDown();
-        }
+    // These are for the CLAW
+    final double open = 1;
+    final double close = .2;
+
+    // These are for the ELBOW joint
+    final double elbowExtended = 1;
+    final double elbowRetracted = .5;
+
+    // These are for the SHOULDER joint
+    final double shoulderExtended = .5;
+    final double shoulderRetracted = .2;
+    final double shoulderUP = 1;
+
+    // These are for the WRIST joint
+    final double wrist = .5;
+    final double wristDown = .1;
+
+    // These are for the HORIZONTAL slides
+    final double HSextension = 0;
+
+
+    public void setClaw(double pos) {
+        claw.setPosition(pos);
     }
 
-    public class Claw {
-        private Servo claw;
+    public void setCW(double pos) {
+        CW.setPosition(pos);
+    }
 
-        public Claw(HardwareMap hardwareMap) {
-            claw = hardwareMap.get(Servo.class, "claw");
-        }
+    public void setCS(double pos) {
+        CS.setPosition(pos);
+    }
 
-        public class CloseClaw implements Action {
-            @Override
-            public boolean run(@NonNull TelemetryPacket packet) {
-                claw.setPosition(0.55);
-                return false;
+    public void setCE(double pos) {
+        CE.setPosition(pos);
+    }
+
+    public void setHS(double pos) {
+        HSL.setPosition(pos);
+        HSR.setPosition(pos);
+    }
+
+    public void setVS(double pos) {
+        SL.setTargetPosition((int) pos);
+        SR.setTargetPosition((int) pos);
+    }
+
+    public void goToBlock() {
+
+        int counter = 0;
+
+        while(counter == 0) {
+
+            if (red > 100 && red > blue && red > green)
+            {
+                if (distance > target_distance)
+                {
+                   setHS(+.1);
+                }
+                else
+                {
+                    counter = counter + 1;
+                }
+            }
+            else
+            {
+                frontLeftMotor.setPower(1);
+                backRightMotor.setPower(1);
+                sleep(1);
             }
         }
-        public Action closeClaw() {
-            return new CloseClaw();
-        }
 
-        public class OpenClaw implements Action {
-            @Override
-            public boolean run(@NonNull TelemetryPacket packet) {
-                claw.setPosition(1.0);
-                return false;
-            }
-        }
-        public Action openClaw() {
-            return new OpenClaw();
-        }
+    }
+
+
+    public Action score() {
+        return new SequentialAction(
+                new InstantAction(() -> {setVS(score);}),
+                new InstantAction(() -> {setCE(elbowRetracted);}),
+                new SleepAction(1),
+                new InstantAction(() -> {setCS(shoulderExtended);}),
+                new InstantAction(() -> {setCE(elbowExtended);}),
+                new SleepAction(1),
+                new InstantAction(() -> {setCS(shoulderRetracted);}),
+                new InstantAction(() -> {setClaw(open);}),
+                new SleepAction(.2),
+                new InstantAction(() -> {setVS(pu);})
+        );
+    }
+
+    public Action pick() {
+        return new SequentialAction(
+                new InstantAction(() -> {setCE(shoulderExtended);}),
+                new InstantAction(() -> {setClaw(open);}),
+                new InstantAction(() -> {setCE(elbowExtended);}),
+                new SleepAction(.3),
+                new InstantAction(() -> {setClaw(close);}),
+                new SleepAction(.1),
+                new InstantAction(() -> {setCS(shoulderUP);}),
+                new SleepAction(.1),
+                new InstantAction(() -> {setCE(elbowRetracted);}),
+                new InstantAction(() -> {setCS(shoulderRetracted);}),
+                new SleepAction(.5)
+        );
+
+    }
+
+    public Action drop() {
+        return new SequentialAction(
+                new InstantAction(() -> {setVS(low);}),
+                new InstantAction(() -> {setCE(elbowExtended);}),
+                new SleepAction(2),
+                new InstantAction(() -> {setClaw(open);})
+
+        );
+    }
+
+
+
+    public Action psa() {
+        return new SequentialAction(
+                new InstantAction(() -> {setVS(low);}),
+                new InstantAction(() -> {setCS(shoulderExtended);}),
+                new InstantAction(() -> {setCE(elbowExtended);}),
+                new InstantAction(() -> {setCW(wristDown);}),
+                new InstantAction(() -> {setClaw(open);}),
+                new SleepAction(1),
+                new InstantAction(() -> {goToBlock();}),
+                new SleepAction(1),
+                new InstantAction(() -> {setCS(shoulderRetracted);}),
+                new InstantAction(() -> {setClaw(close);}),
+                new InstantAction(() -> {setCS(shoulderExtended);}),
+                new InstantAction(() -> {setCE(elbowRetracted);}),
+                new InstantAction(() -> {setHS(HSextension);})
+        );
     }
 
     @Override
-    public void runOpMode() {
-        Pose2d initialPose = new Pose2d(11.8, 61.7, Math.toRadians(90));
-        MecanumDrive drive = new MecanumDrive(hardwareMap, initialPose);
-        Claw claw = new Claw(hardwareMap);
-        Lift lift = new Lift(hardwareMap);
+    public void runOpMode(){
 
-        // vision here that outputs position
-        int visionOutputPosition = 1;
+        RevColorSensorV3 colorSensor = hardwareMap.get(RevColorSensorV3.class, "brushland color sensor");
 
-        TrajectoryActionBuilder tab1 = drive.actionBuilder(initialPose)
-                .lineToYSplineHeading(33, Math.toRadians(0))
-                .waitSeconds(2)
-                .setTangent(Math.toRadians(90))
-                .lineToY(48)
-                .setTangent(Math.toRadians(0))
-                .lineToX(32)
-                .strafeTo(new Vector2d(44.5, 30))
-                .turn(Math.toRadians(180))
-                .lineToX(47.5)
-                .waitSeconds(3);
-        TrajectoryActionBuilder tab2 = drive.actionBuilder(initialPose)
-                .lineToY(37)
-                .setTangent(Math.toRadians(0))
-                .lineToX(18)
-                .waitSeconds(3)
-                .setTangent(Math.toRadians(0))
-                .lineToXSplineHeading(46, Math.toRadians(180))
-                .waitSeconds(3);
-        TrajectoryActionBuilder tab3 = drive.actionBuilder(initialPose)
-                .lineToYSplineHeading(33, Math.toRadians(180))
-                .waitSeconds(2)
-                .strafeTo(new Vector2d(46, 30))
-                .waitSeconds(3);
-        Action trajectoryActionCloseOut = tab1.endTrajectory().fresh()
-                .strafeTo(new Vector2d(48, 12))
-                .build();
-
-        // actions that need to happen on init; for instance, a claw tightening.
-        Actions.runBlocking(claw.closeClaw());
-
-
-        while (!isStopRequested() && !opModeIsActive()) {
-            int position = visionOutputPosition;
-            telemetry.addData("Position during Init", position);
-            telemetry.update();
+        // You might need to enable the sensor's light for better readings
+        if (colorSensor instanceof SwitchableLight) {
+            ((SwitchableLight) colorSensor).enableLight(true);
         }
 
-        int startPosition = visionOutputPosition;
-        telemetry.addData("Starting Position", startPosition);
-        telemetry.update();
+        Pose2d Initial_Pose = new Pose2d(0, -62, Math.toRadians(90));
+        PinpointDrive drive = new PinpointDrive(hardwareMap, Initial_Pose);
+
+
+            while(opModeIsActive()) {
+                int red = colorSensor.red();
+                int green = colorSensor.green();
+                int blue = colorSensor.blue();
+                double distance = colorSensor.getDistance(DistanceUnit.CM);
+                final double target_distance = 5;
+
+                NormalizedRGBA colors = colorSensor.getNormalizedColors();
+                telemetry.addData("Red", ".3f", colors.red);
+                telemetry.addData("Green", ".3f", colors.green);
+                telemetry.addData("Blue", ".3f", colors.blue);
+                telemetry.addData("Distance", ".2f", distance);
+                telemetry.update();
+            }
+
+
+
+
+        DcMotor frontLeftMotor = hardwareMap.dcMotor.get("left_front");
+        DcMotor backLeftMotor = hardwareMap.dcMotor.get("left_back");
+        DcMotor frontRightMotor = hardwareMap.dcMotor.get("right_front");
+        DcMotor backRightMotor = hardwareMap.dcMotor.get("back_right");
+        DcMotor SL = hardwareMap.dcMotor.get("slidesLeft");
+        DcMotor SR = hardwareMap.dcMotor.get("slidesRight");
+
+        CW = hardwareMap.get(Servo.class, "wrist");
+        CE = hardwareMap.get(Servo.class, "elbow");
+        claw = hardwareMap.get(Servo.class, "claw");
+        CS = hardwareMap.get(Servo.class, "shoulder");
+        HSL = hardwareMap.get(Servo.class, "Horizontal Slide Left");
+        HSR = hardwareMap.get(Servo.class, "Horizontal Slide Right");
+
+
+        Action scorePreload = drive.actionBuilder(Initial_Pose)
+                .strafeTo(new Vector2d(0, -30.3))
+                .build();
+
+        Action push = drive.actionBuilder(new Pose2d(0, -32.5, Math.toRadians(90)))
+                .setTangent(Math.toRadians(-90))
+                .splineToConstantHeading(new Vector2d(36, -30), Math.toRadians(90))
+
+                .setTangent(Math.toRadians(90))
+                .splineToConstantHeading(new Vector2d(47, -11), Math.toRadians(-90))
+                .waitSeconds(.2)
+                .strafeTo(new Vector2d(47, -55))
+
+                .setTangent(Math.toRadians(90))
+                .splineToLinearHeading(new Pose2d(new Vector2d(59, -11), Math.toRadians(-90)), Math.toRadians(0))
+                .waitSeconds(.2)
+                .strafeTo(new Vector2d(59, -59.5))
+
+                .build();
+
+        Action scoreCycle1 = drive.actionBuilder(new Pose2d(58, -60.5, Math.toRadians(90)))
+                .setTangent(Math.toRadians(90))
+                .splineToLinearHeading(new Pose2d(new Vector2d(3, -30.3), Math.toRadians(90)), Math.toRadians(90))
+                .build();
+
+        Action pickCycle1 = drive.actionBuilder(new Pose2d(3, -32.5, Math.toRadians(90)))
+                .setTangent(Math.toRadians(-90))
+                .splineToLinearHeading(new Pose2d(new Vector2d(58, -59.5), Math.toRadians(-90)), Math.toRadians(-90))
+                .build();
+
+        Action scoreCycle2 = drive.actionBuilder(new Pose2d(58, -60.5, Math.toRadians(90)))
+                .setTangent(Math.toRadians(90))
+                .splineToLinearHeading(new Pose2d(new Vector2d(-6, -30.3), Math.toRadians(90)), Math.toRadians(90))
+                .build();
+
+        Action pickCycle2 = drive.actionBuilder(new Pose2d(-3, -32.5, Math.toRadians(90)))
+                .setTangent(Math.toRadians(-90))
+                .splineToLinearHeading(new Pose2d(new Vector2d(58, -59.5), Math.toRadians(-90)), Math.toRadians(-90))
+                .build();
+
+        Action scoreCycle3 = drive.actionBuilder(new Pose2d(58, -60.5, Math.toRadians(90)))
+                .setTangent(Math.toRadians(90))
+                .splineToLinearHeading(new Pose2d(new Vector2d(6, -30.3), Math.toRadians(90)), Math.toRadians(90))
+                .build();
+
+
+
+
         waitForStart();
 
-        if (isStopRequested()) return;
+        if (isStopRequested()){
+            return;
 
-        Action trajectoryActionChosen;
-        if (startPosition == 1) {
-            trajectoryActionChosen = tab1.build();
-        } else if (startPosition == 2) {
-            trajectoryActionChosen = tab2.build();
-        } else {
-            trajectoryActionChosen = tab3.build();
         }
 
         Actions.runBlocking(
                 new SequentialAction(
-                        trajectoryActionChosen,
-                        lift.liftUp(),
-                        claw.openClaw(),
-                        lift.liftDown(),
-                        trajectoryActionCloseOut
+                        scorePreload,
+                        score(),
+                        push,
+                        pick(),
+                        scoreCycle1,
+                        score(),
+                        pickCycle1,
+                        pick(),
+                        scoreCycle2,
+                        score(),
+                        pickCycle2,
+                        pick(),
+                        scoreCycle3,
+                        score()
+
                 )
+
         );
+
     }
+
+
+
 }
