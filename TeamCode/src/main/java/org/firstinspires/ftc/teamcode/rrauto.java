@@ -105,6 +105,8 @@ public class rrauto extends LinearOpMode {
 
         while(counter == 0) {
 
+            // counter = counter + 1 (THIS IS FOR THE TRIAL WHEN DOING AUTO SINCE IT CANNOT "DETECT" RED WHEN ON THE PRACTICE FIELD
+
             if (red > 100 && red > blue && red > green)
             {
                 if (distance > target_distance)
@@ -179,7 +181,7 @@ public class rrauto extends LinearOpMode {
                 new InstantAction(() -> {setCW(wristDown);}),
                 new InstantAction(() -> {setClaw(open);}),
                 new SleepAction(1),
-                new InstantAction(() -> {goToBlock();}),
+                new InstantAction(this::goToBlock),
                 new SleepAction(1),
                 new InstantAction(() -> {setCS(shoulderRetracted);}),
                 new InstantAction(() -> {setClaw(close);}),
@@ -250,9 +252,14 @@ public class rrauto extends LinearOpMode {
                 .strafeTo(new Vector2d(47, -55))
 
                 .setTangent(Math.toRadians(90))
-                .splineToLinearHeading(new Pose2d(new Vector2d(59, -11), Math.toRadians(-90)), Math.toRadians(0))
+                .splineToLinearHeading(new Pose2d(new Vector2d(59, -11), Math.toRadians(90)), Math.toRadians(0))
                 .waitSeconds(.2)
                 .strafeTo(new Vector2d(59, -59.5))
+
+                .setTangent(Math.toRadians(90))
+                .splineToLinearHeading(new Pose2d(new Vector2d(63, -11), Math.toRadians(-90)), Math.toRadians(0))
+                .waitSeconds(.2)
+                .strafeTo(new Vector2d(63, -59.5))
 
                 .build();
 
@@ -281,6 +288,47 @@ public class rrauto extends LinearOpMode {
                 .splineToLinearHeading(new Pose2d(new Vector2d(6, -30.3), Math.toRadians(90)), Math.toRadians(90))
                 .build();
 
+        Action pickCycle3 = drive.actionBuilder(new Pose2d(-3, -32.5, Math.toRadians(90)))
+                .setTangent(Math.toRadians(-90))
+                .splineToLinearHeading(new Pose2d(new Vector2d(58, -59.5), Math.toRadians(-90)), Math.toRadians(-90))
+                .build();
+
+        Action scoreCycle4 = drive.actionBuilder(new Pose2d(58, -60.5, Math.toRadians(90)))
+                .setTangent(Math.toRadians(90))
+                .splineToLinearHeading(new Pose2d(new Vector2d(-6, -30.3), Math.toRadians(90)), Math.toRadians(90))
+                .build();
+
+        Action PSA1 = drive.actionBuilder(new Pose2d(-6, -30.3, Math.toRadians(90)))
+                .setTangent(Math.toRadians(-90))
+                .splineToLinearHeading(new Pose2d(new Vector2d(58, -59.5), Math.toRadians(-90)), Math.toRadians(-90))
+                .build();
+
+        Action scoreCycle5 = drive.actionBuilder(new Pose2d(58, -60.5, Math.toRadians(90)))
+                .setTangent(Math.toRadians(90))
+                .splineToLinearHeading(new Pose2d(new Vector2d(-9, -30.3), Math.toRadians(90)), Math.toRadians(90))
+                .build();
+
+        Action PSA2 = drive.actionBuilder(new Pose2d(-9, -30.3, Math.toRadians(90)))
+                .setTangent(Math.toRadians(-90))
+                .splineToLinearHeading(new Pose2d(new Vector2d(58, -59.5), Math.toRadians(-90)), Math.toRadians(-90))
+                .build();
+
+        Action scoreCycle6 = drive.actionBuilder(new Pose2d(58, -60.5, Math.toRadians(90)))
+                .setTangent(Math.toRadians(90))
+                .splineToLinearHeading(new Pose2d(new Vector2d(9, -30.3), Math.toRadians(90)), Math.toRadians(90))
+                .build();
+
+        Action PSA3 = drive.actionBuilder(new Pose2d(9, -30.3, Math.toRadians(90)))
+                .setTangent(Math.toRadians(-90))
+                .splineToLinearHeading(new Pose2d(new Vector2d(58, -59.5), Math.toRadians(-90)), Math.toRadians(-90))
+                .build();
+
+        Action scoreCycle7 = drive.actionBuilder(new Pose2d(58, -60.5, Math.toRadians(90)))
+                .setTangent(Math.toRadians(90))
+                .splineToLinearHeading(new Pose2d(new Vector2d(12, -30.3), Math.toRadians(90)), Math.toRadians(90))
+                .build();
+
+
 
 
 
@@ -306,7 +354,31 @@ public class rrauto extends LinearOpMode {
                         pickCycle2,
                         pick(),
                         scoreCycle3,
+                        score(),
+                        pickCycle3,
+                        pick(),
+                        scoreCycle4,
+                        score(),
+                        psa(),
+                        PSA1,
+                        drop(),
+                        pick(),
+                        scoreCycle5,
+                        score(),
+                        psa(),
+                        PSA2,
+                        drop(),
+                        pick(),
+                        scoreCycle6,
+                        score(),
+                        psa(),
+                        PSA3,
+                        drop(),
+                        pick(),
+                        scoreCycle7,
                         score()
+
+
 
                 )
 
